@@ -1,5 +1,18 @@
 # -*- coding: utf-8
-import serial
+class Printer():
+    def __init__(self, port):
+        self.port = port
+
+    def print_text(self, text):
+        self.port.write(text)
+
+    def print_kanji(self, text):
+        self.port.write(text.encode('gbk'))
+
+    def print_space(self):
+        self.port.write('\x00\x0a')
+        self.port.write('\x00\x0a')
+        self.port.write('\x00\x0a')
 
 class PrinterSettings():
     def __init__(self, port):
@@ -20,30 +33,3 @@ class PrinterSettings():
     
     def set_kanji_mode(self):
         self._write_bytes('\x1c', '\x26')
-    
-class Printer():
-    def __init__(self, port):
-        self.port = port
-
-    def print_text(self, text):
-        self.port.write(text)
-
-    def print_kanji(self, text):
-        self.port.write(text.encode('gbk'))
-
-    def print_space(self):
-        self.port.write('\x00\x0a')
-        self.port.write('\x00\x0a')
-        self.port.write('\x00\x0a')
-        
-if __name__ == '__main__':
-    port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=3.0)
-
-    printer = Printer(port)
-    printer_settings = PrinterSettings(port)
-
-    printer_settings.set_big_chars()
-    printer.print_kanji(u'亜唖娃阿哀愛\n')
-    printer_settings.unset_big_chars()
-    printer.print_text('test\n')
-    printer.print_space()
