@@ -1,36 +1,49 @@
 # -*- coding: utf-8
-
 import serial
 
-port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=3.0)
+class PrinterSettings():
+    def __init__(self, port):
+        self.port = port
 
-def set_left_justify():
-    port.write('\x1b')
-    port.write('\x61')
-    port.write('\x00')
+    def _write_bytes(self, *bytes):
+        for b in bytes:
+            self.port.write(b)
 
-text = u'''亜唖娃阿哀愛挨逢葵茜悪握渥旭葦芦鯵梓圧斡扱宛姐飴絢綾鮎或粟袷安庵按暗案闇鞍杏以伊位依偉囲夷委威尉惟意慰易椅為畏異移維緯胃萎衣謂違遺医井亥域育郁磯一壱溢逸稲茨芋鰯允印咽員因姻引飲淫胤蔭院陰隠韻吋右宇烏羽'''.encode('gbk')
+    def set_left_justify(self):
+        self._write_bytes('\x1b', '\x61', '\x00')
+    
+    def set_big_chars(self):
+        self._write_bytes('\x1d', '\x21', chr(2|16))
+    
+    def unset_big_chars(self):
+        self._write_bytes('\x1d', '\x21', chr(0))
+    
+    def set_kanji_mode(self):
+        self._write_bytes('\x1c', '\x26')
+    
+class Printer():
+    def __init__(self, port):
+        self.port = port
 
-def set_big_chars():
-    port.write('\x1d')
-    port.write('\x21')
-    port.write(chr(2|16))
+    def print_text(self, text):
+        self.port.write(text)
 
-def unset_big_chars():
-    port.write('\x1d')
-    port.write('\x21')
-    port.write(chr(0))
+    def print_kanji(self, text):
+        self.port.write(text.encode('gbk'))
 
-def set_kanji_mode():
-    port.write('\x1c')
-    port.write('\x26')
-
-def write_newlines():
-    port.write('\x00\x0a')
-    port.write('\x00\x0a')
-    port.write('\x00\x0a')
-
+    def print_space(self):
+        self.port.write('\x00\x0a')
+        self.port.write('\x00\x0a')
+        self.port.write('\x00\x0a')
+        
 if __name__ == '__main__':
-    unset_big_chars()
-    port.write(text)
-    write_newlines()
+    port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=3.0)
+
+    printer = Printer(port)
+    printer_settings = PrinterSettings(port)
+
+    printer_settings.set_big_chars()
+    printer.print_kanji(u'亜唖娃阿哀愛\n')
+    printer_settings.unset_big_chars()
+    printer.print_text('test\n')
+    printer.print_space()
