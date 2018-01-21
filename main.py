@@ -1,10 +1,10 @@
-import serial
+# -*- coding: utf-8
 
 from printer import Printer, PrinterSettings
+from port_wrapper import PortWrapper
 
 if __name__ == '__main__':
-    port = serial.Serial("/dev/ttyAMA0", baudrate=19200, timeout=3.0)
-
+    port = PortWrapper()
     printer = Printer(port)
     printer_settings = PrinterSettings(port)
 
